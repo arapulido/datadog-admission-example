@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ns1
+  labels:
+    shared-gateway: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ns2
+  labels:
+    shared-gateway: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nsgw
+

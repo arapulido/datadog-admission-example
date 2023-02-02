@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    tags.datadoghq.com/env: development
+    tags.datadoghq.com/service: advertisements
+    tags.datadoghq.com/version: "1.0" 
+    app: ecommerce
+  name: advertisements
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      tags.datadoghq.com/env: development
+      tags.datadoghq.com/service: advertisements
+      tags.datadoghq.com/version: "1.0" 
+      app: ecommerce
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        tags.datadoghq.com/env: development
+        tags.datadoghq.com/service: advertisements
+        tags.datadoghq.com/version: "1.0" 
+        admission.datadoghq.com/enabled: "true"
+        app: ecommerce
+      annotations:
+        admission.datadoghq.com/python-lib.version: "v1.6.6"
+    spec:
+      containers:
+      - image: arapulido/ads_no_instrumentation:latest
+        name: advertisements
+        imagePullPolicy: Always
+        command: ["flask"]
+        args: ["run", "--port=5002", "--host=0.0.0.0"]
+        env:
+          - name: FLASK_APP
+            value: "ads.py"
+          - name: FLASK_DEBUG
+            value: "1"
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: pw
+                name: db-password
+          - name: POSTGRES_USER
+            value: "user"
+          - name: POSTGRES_HOST
+            value: "db"
+          - name: DD_LOGS_INJECTION
+            value: "true"
+          - name: DD_ANALYTICS_ENABLED
+            value: "true"
+          - name: DD_PROFILING_ENABLED
+            value: "true"
+        ports:
+        - containerPort: 5002
+        resources: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    tags.datadoghq.com/service: advertisements
+    tags.datadoghq.com/env: development
+    app: ecommerce
+  name: advertisements
+spec:
+  ports:
+  - port: 5002
+    protocol: TCP
+    targetPort: 5002
+  selector:
+    tags.datadoghq.com/service: advertisements
+    tags.datadoghq.com/env: development
+    app: ecommerce
